@@ -91,7 +91,7 @@ DATABASES = {
         'NAME': 'railway',
         'USER': 'postgres',
         'PASSWORD': 'eWmpfrepYMMShloknzxGmRaXDMARGGPm',
-        'HOST': 'maglev.proxy.rlwy.net',    # maglev.proxy.rlwy.net:14095
+        'HOST': 'maglev.proxy.rlwy.net',    
         'PORT': 14095,  
     }
 }
