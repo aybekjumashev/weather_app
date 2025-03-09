@@ -13,7 +13,7 @@ load_dotenv()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_URL = 'http://localhost:8000'
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
 AUTH_USER_MODEL = 'weather_api.TgUser'
 
 # Security settings
