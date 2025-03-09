@@ -15,8 +15,3 @@ from whitenoise import WhiteNoise
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'weather_app.settings')
 
 application = get_wsgi_application()
-
-from django.conf import settings
-if not settings.DEBUG:
-    from whitenoise import WhiteNoise
-    application = WhiteNoise(application, root=settings.STATIC_ROOT)
