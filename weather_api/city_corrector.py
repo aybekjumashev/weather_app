@@ -18,7 +18,7 @@ class CityCorrector:
 
     def correct_city_name(self, city):
         """
-        Corrects the spelling of a city name.
+        Corrects the spelling of a city name.  Prioritizes cities over countries.
 
         Args:
             city (str): The potentially misspelled city name.
@@ -27,10 +27,24 @@ class CityCorrector:
             str: The corrected city name, or None if the city cannot be found.
         """
         try:
-            location = self.geolocator.geocode(city, timeout=5)  # Adjust timeout as needed
+            # Limit results to populated places to prioritize cities
+            location = self.geolocator.geocode(city, exactly_one=True, timeout=5, featuretype="city")
 
             if location:
-                return location.address.split(',')[-1].strip()  # Extract city from address string
+                try:
+                    city_name = location.raw.get('name')
+                    if city_name:
+                        return city_name  # Return 'name' directly
+
+                    # Fallback (less reliable) - only use if name is not present.
+                    return location.raw['address'].get('city') or location.raw['address'].get('town') or location.raw['address'].get('village') or location.raw['address'].get('hamlet')
+
+                except KeyError as e:
+                    print(f"KeyError accessing address components: {e}")
+                    print(f"Raw location data: {location.raw}")  # Print raw data for inspection
+                    return None
+
+
             else:
                 return None  # City not found
 
@@ -43,3 +57,19 @@ class CityCorrector:
         except Exception as e:
             print(f"An unexpected error occurred during geocoding: {e}")
             return None
+
+
+
+#Test
+# city_corrector = CityCorrector()
+# corrected_city = city_corrector.correct_city_name('Toshkent')
+# print(corrected_city)
+
+# corrected_city = city_corrector.correct_city_name('London')
+# print(corrected_city)
+
+# corrected_city = city_corrector.correct_city_name('Tashkent')
+# print(corrected_city)
+
+# corrected_city = city_corrector.correct_city_name('Tokio')
+# print(corrected_city)
