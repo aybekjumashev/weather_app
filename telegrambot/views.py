@@ -13,15 +13,15 @@ def get_or_create_user(telegram_id):
 
     # Login 
     login_url = f"{settings.BASE_URL}/api/auth/login/"
-    response = requests.post(login_url, headers=headers, json=payload)
+    response = requests.post(login_url, headers=headers, json=payload, verify=False)
     if response.status_code == 200:
         return response.json() 
 
     # Register
     register_url = f"{settings.BASE_URL}/api/auth/register/"
-    response = requests.post(register_url, headers=headers, json={**payload, "password2": payload["password"]})
+    response = requests.post(register_url, headers=headers, json={**payload, "password2": payload["password"]}, verify=False)
     if response.status_code == 201:
-        return requests.post(login_url, headers=headers, json=payload).json() 
+        return requests.post(login_url, headers=headers, json=payload, verify=False).json() 
 
     return None  
 
@@ -55,7 +55,7 @@ def telegram_webhook(request):
                         city = text.split()[1]
                         data = {'city': city}
                         rest_api_url = f"{settings.BASE_URL}/api/users/city/" 
-                        response = requests.patch(rest_api_url, headers=headers, json=data) 
+                        response = requests.patch(rest_api_url, headers=headers, json=data, verify=False) 
 
                         if response.status_code == 200:
                             answer = f"{city} qalası belgilendi!"
@@ -75,7 +75,7 @@ def telegram_webhook(request):
                         city = user_data['city']
                         if city:
                             weather_api_url = f"{settings.BASE_URL}/api/weather/{city}/"
-                            weather_response = requests.get(weather_api_url, headers=headers)
+                            weather_response = requests.get(weather_api_url, headers=headers, verify=False)
                             if weather_response.status_code == 200:
                                 weather_data = weather_response.json()
                                 answer = f"{city} qalası hawa rayı:\n\nTemperatura: {weather_data['temp']}\nHalı: {weather_data['desc']}\nÍǵallıq: {weather_data['humidity']}\nSamal tezligi: {weather_data['speed']}"
@@ -93,7 +93,7 @@ def telegram_webhook(request):
                     try:
                         city = text.split()[1]
                         weather_api_url = f"{settings.BASE_URL}/api/weather/{city}/"
-                        weather_response = requests.get(weather_api_url, headers=headers)
+                        weather_response = requests.get(weather_api_url, headers=headers, verify=False)
                         if weather_response.status_code == 200:
                             weather_data = weather_response.json()
                             answer = f"{city}  qalası hawa rayı:\n\nTemperatura: {weather_data['temp']}\nHalı: {weather_data['desc']}\nÍǵallıq: {weather_data['humidity']}\nSamal tezligi: {weather_data['speed']}"
