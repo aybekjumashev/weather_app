@@ -1,43 +1,49 @@
-import requests
 from django.conf import settings
 from .models import WeatherData
 from django.utils.timezone import now, localtime, timedelta
+from weather_client import WeatherClient # Import the WeatherClient
 
 def get_weather_data(city):
+    """
+    Retrieves weather data for a given city.  Uses a cache and external API.
+
+    Args:
+        city (str): The city to get weather data for.
+
+    Returns:
+        dict: A dictionary containing weather data, or None if an error occurred.
+    """
     api_key = settings.OPENWEATHERMAP_API_KEY
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    weather_client = WeatherClient(api_key)  # Create an instance of the client
 
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-
-        temp = data['main']['temp']
-        desc = data['weather'][0]['description']
-        humidity = data['main']['humidity']
-        speed = data['wind']['speed']
-
         weather_data, created = WeatherData.objects.get_or_create(
             city=city,
             defaults={
-                "temp": temp,
-                "desc": desc,
-                "humidity": humidity,
-                "speed": speed,
+                "temp": 0,  # Initial dummy values.  These will be overwritten on the first valid API call
+                "desc": "",
+                "humidity": 0,
+                "speed": 0,
                 "current_time": now()
             }
         )
 
-        if not created:
-            dt = now() - localtime(weather_data.current_time)
-            if dt > timedelta(minutes=30):
-                print(f'SET WEATHER dt={dt}')
-                weather_data.temp = temp
-                weather_data.desc = desc
-                weather_data.humidity = humidity
-                weather_data.speed = speed
+        # Check if the cache needs to be updated
+        dt = now() - localtime(weather_data.current_time)
+        if created or dt > timedelta(minutes=30):  # Always update when a new record is created
+            print(f'UPDATING WEATHER dt={dt} created={created}')
+            api_data = weather_client.get_weather(city)  # Fetch data from the API
+
+            if api_data:
+                weather_data.temp = api_data['temp']
+                weather_data.desc = api_data['desc']
+                weather_data.humidity = api_data['humidity']
+                weather_data.speed = api_data['speed']
                 weather_data.current_time = now()
                 weather_data.save()
+            else:
+                print("Failed to retrieve weather data from API.")
+                return None  # Or raise an exception if appropriate
 
         return {
             'city': weather_data.city,
@@ -47,9 +53,6 @@ def get_weather_data(city):
             'speed': weather_data.speed,
         }
 
-    except requests.exceptions.RequestException as e:
-        print(f"Qátelik júz berdi: {e}")
-        return None
-    except KeyError:
-        print("Nadurıs format")
+    except Exception as e:  # Catch broader exceptions
+        print(f"Error in get_weather_data: {e}")
         return None
