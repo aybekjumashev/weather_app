@@ -33,14 +33,6 @@ class WeatherClient:
             dict: A dictionary containing weather data, or None if an error occurred.
         """
 
-        corrected_city = self.city_corrector.correct_city_name(city)
-        if corrected_city:
-            print(f"Corrected city name from '{city}' to '{corrected_city}'")
-            city = corrected_city
-        else:
-            print(f"Could not correct city name '{city}'.  Attempting API call anyway.")
-            # Consider returning None here if you *require* a valid city.  Or raise an exception.
-
         url = f"{self.base_url}?q={city}&appid={self.api_key}&units={units}"
 
         try:

@@ -18,6 +18,11 @@ def get_weather_data(city):
     weather_client = WeatherClient(api_key, user_agent="your_django_app")  # Important:  Set a unique user agent
 
     try:
+        corrected_city = weather_client.city_corrector.correct_city_name(city)
+        if corrected_city:
+            print(f"Corrected city name from '{city}' to '{corrected_city}'")
+            city = corrected_city
+            
         weather_data, created = WeatherData.objects.get_or_create(
             city=city,
             defaults={
