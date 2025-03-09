@@ -7,24 +7,70 @@ from .utils import send_message
 
 
 
+import requests
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)  # Use a logger
+
 def get_or_create_user(telegram_id):
     headers = {'Content-Type': 'application/json'}
-    payload = {"username": f"User-{telegram_id}", "password": f"Pass-{telegram_id}"}
+    username = f"User-{telegram_id}"
+    password = f"Pass-{telegram_id}" # Consider generating stronger passwords
+    payload = {"username": username, "password": password}
 
-    # Login 
     login_url = f"{settings.BASE_URL}/api/auth/login/"
-    response = requests.post(login_url, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json() 
-
-    # Register
     register_url = f"{settings.BASE_URL}/api/auth/register/"
-    response = requests.post(register_url, headers=headers, json={**payload, "password2": payload["password"]})
-    if response.status_code == 201:
-        return requests.post(login_url, headers=headers, json=payload).json() 
 
-    return None  
+    try:  # Add a top-level try-except block
+        # Login
+        logger.debug(f"Attempting login with URL: {login_url}, payload: {payload}")
+        response = requests.post(login_url, headers=headers, json=payload)
+        response.raise_for_status()  # Raise HTTPError for bad responses
 
+        if response.status_code == 200:
+            logger.info(f"Login successful for user: {username}")
+            return response.json()  # Return login data
+
+        else:
+            logger.warning(f"Login failed (status {response.status_code}) for user: {username}, response: {response.text}")
+            # Fallback to registration if login fails
+            pass # The `pass` makes it fall through to the registration attempt.
+
+        # Register
+        logger.debug(f"Attempting registration with URL: {register_url}, payload: {payload}")
+        response = requests.post(register_url, headers=headers, json={**payload, "password2": password})
+        response.raise_for_status()  # Raise HTTPError
+
+        if response.status_code == 201:
+            logger.info(f"Registration successful for user: {username}")
+
+            # OPTION 1: Rely on the registration endpoint to return login data.
+            #return response.json() # Registration endpoint should return token.
+
+            # OPTION 2: Login immediately after registration
+            logger.debug(f"Logging in after registration for user: {username}")
+            response = requests.post(login_url, headers=headers, json=payload)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                logger.info(f"Login successful after registration for user: {username}")
+                return response.json()  # Return login data after registration
+
+            else:
+                logger.error(f"Login failed AFTER registration (status {response.status_code}) for user: {username}, response: {response.text}")
+                return None # Even if registration succeeds, login could still fail for some reason.
+
+        else:
+            logger.error(f"Registration failed (status {response.status_code}) for user: {username}, response: {response.text}")
+            return None # Registration failed
+
+    except requests.exceptions.RequestException as e:  # Catch network errors
+        logger.exception(f"Request exception: {e}") # Log the full exception
+        return None
+    except Exception as e: # Catch any other errors
+        logger.exception(f"An unexpected error occurred: {e}")
+        return None
 
 @csrf_exempt
 def telegram_webhook(request):
