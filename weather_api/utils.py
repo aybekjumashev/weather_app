@@ -1,7 +1,7 @@
 from django.conf import settings
 from .models import WeatherData
 from django.utils.timezone import now, localtime, timedelta
-from weather_client import WeatherClient # Import the WeatherClient
+from weather_api.weather_client import WeatherClient # Import the WeatherClient
 
 def get_weather_data(city):
     """
