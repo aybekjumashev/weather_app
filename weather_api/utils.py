@@ -5,7 +5,8 @@ from weather_api.weather_client import WeatherClient # Import the WeatherClient
 
 def get_weather_data(city):
     """
-    Retrieves weather data for a given city.  Uses a cache and external API.
+    Retrieves weather data for a given city.  Uses a cache and external API,
+    and attempts to correct the city name.
 
     Args:
         city (str): The city to get weather data for.
@@ -14,7 +15,7 @@ def get_weather_data(city):
         dict: A dictionary containing weather data, or None if an error occurred.
     """
     api_key = settings.OPENWEATHERMAP_API_KEY
-    weather_client = WeatherClient(api_key)  # Create an instance of the client
+    weather_client = WeatherClient(api_key, user_agent="your_django_app")  # Important:  Set a unique user agent
 
     try:
         weather_data, created = WeatherData.objects.get_or_create(

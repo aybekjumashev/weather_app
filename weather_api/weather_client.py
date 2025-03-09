@@ -1,24 +1,29 @@
 import requests
+from .city_corrector import CityCorrector  # Import CityCorrector
 
 class WeatherClient:
     """
     A client for fetching weather data from the OpenWeatherMap API.
+    Includes city name correction.
     """
 
-    def __init__(self, api_key, base_url="http://api.openweathermap.org/data/2.5/weather"):
+    def __init__(self, api_key, base_url="http://api.openweathermap.org/data/2.5/weather", user_agent="weather_app"):
         """
         Initializes the WeatherClient.
 
         Args:
             api_key (str): Your OpenWeatherMap API key.
             base_url (str, optional): The base URL for the OpenWeatherMap API. Defaults to "http://api.openweathermap.org/data/2.5/weather".
+            user_agent (str, optional): User-agent for the geocoder.
         """
         self.api_key = api_key
         self.base_url = base_url
+        self.city_corrector = CityCorrector(user_agent=user_agent)  # Initialize CityCorrector
+        self.user_agent = user_agent
 
     def get_weather(self, city, units="metric"):
         """
-        Fetches weather data for a given city.
+        Fetches weather data for a given city, correcting the city name if needed.
 
         Args:
             city (str): The city to fetch weather data for.
@@ -27,6 +32,15 @@ class WeatherClient:
         Returns:
             dict: A dictionary containing weather data, or None if an error occurred.
         """
+
+        corrected_city = self.city_corrector.correct_city_name(city)
+        if corrected_city:
+            print(f"Corrected city name from '{city}' to '{corrected_city}'")
+            city = corrected_city
+        else:
+            print(f"Could not correct city name '{city}'.  Attempting API call anyway.")
+            # Consider returning None here if you *require* a valid city.  Or raise an exception.
+
         url = f"{self.base_url}?q={city}&appid={self.api_key}&units={units}"
 
         try:
