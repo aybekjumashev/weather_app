@@ -1,5 +1,5 @@
 asgiref==3.8.1
-certifi==2025.1.31
+certifi
 charset-normalizer==3.4.1
 Django==5.1.7
 djangorestframework==3.15.2
@@ -13,6 +13,6 @@ PyJWT==2.9.0
 requests==2.32.3
 sqlparse==0.5.3
 tzdata==2025.1
-urllib3==2.3.0
+urllib3
 waitress==3.0.2
 dj-database-url
