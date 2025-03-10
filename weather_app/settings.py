@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'weather_api',
     'telegrambot',
+    'silk'
 ]
 
 MIDDLEWARE = [
