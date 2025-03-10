@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
 class TgUser(AbstractUser):
-    telegram_id = models.CharField(max_length=255, unique=True, blank=True, null=True, verbose_name="Telegram ID")
     city = models.CharField(max_length=255, blank=True, null=True, verbose_name="City")
     email = models.EmailField(blank=True, null=True, verbose_name="Email")
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Firstname")

@@ -3,7 +3,7 @@ from .models import WeatherData
 from django.utils.timezone import now, localtime, timedelta
 from weather_api.weather_client import WeatherClient # Import the WeatherClient
 
-def get_weather_data(city):
+def get_weather_data(city, skip_correction=False):
     """
     Retrieves weather data for a given city.  Uses a cache and external API,
     and attempts to correct the city name.
@@ -15,13 +15,14 @@ def get_weather_data(city):
         dict: A dictionary containing weather data, or None if an error occurred.
     """
     api_key = settings.OPENWEATHERMAP_API_KEY
-    weather_client = WeatherClient(api_key, user_agent="your_django_app")  # Important:  Set a unique user agent
+    weather_client = WeatherClient(api_key, user_agent="weather_api")  # Important:  Set a unique user agent
 
     try:
-        corrected_city = weather_client.city_corrector.correct_city_name(city)
-        if corrected_city:
-            print(f"Corrected city name from '{city}' to '{corrected_city}'")
-            city = corrected_city
+        if not skip_correction:
+            corrected_city = weather_client.city_corrector.correct_city_name(city)
+            if corrected_city:
+                print(f"Corrected city name from '{city}' to '{corrected_city}'")
+                city = corrected_city
             
         weather_data, created = WeatherData.objects.get_or_create(
             city=city,
