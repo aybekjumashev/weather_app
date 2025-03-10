@@ -20,4 +20,3 @@ psycopg2-binary
 whitenoise
 dotenv
 geopy
-django-silk
