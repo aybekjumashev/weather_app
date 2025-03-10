@@ -64,7 +64,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         city = data.get('city')
         if city:
             corrector = CityCorrector()
-            corrected_city = corrector.correct_city_name(city)
+            corrected_city, lat, lon = corrector.correct_city_name(city)
             if corrected_city:
                 data['city'] = corrected_city
             else:

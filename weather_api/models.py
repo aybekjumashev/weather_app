@@ -9,10 +9,14 @@ class TgUser(AbstractUser):
 
 
 class WeatherData(models.Model):
-    city = models.CharField(max_length=100, unique=True)
+    city = models.CharField(max_length=100)
     temp = models.FloatField()
     desc = models.CharField(max_length=200)
     humidity = models.IntegerField()
     speed = models.FloatField()
     current_time = models.DateTimeField(auto_now_add=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
 
+    class Meta:
+        unique_together = ('city', 'latitude', 'longitude')

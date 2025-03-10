@@ -51,6 +51,38 @@ class WeatherClient:
             print(f"Missing data in response: {e}")
             return None
 
+    def get_weather_by_coordinates(self, latitude, longitude, units="metric"):
+        """
+        Fetches weather data for a given latitude and longitude.
+
+        Args:
+            latitude (float): The latitude of the location.
+            longitude (float): The longitude of the location.
+            units (str, optional): The units to use for temperature (e.g., "metric", "imperial"). Defaults to "metric".
+
+        Returns:
+            dict: A dictionary containing weather data, or None if an error occurred.
+        """
+
+        url = f"{self.base_url}?lat={latitude}&lon={longitude}&appid={self.api_key}&units={units}"
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            data = response.json()
+            return self._parse_weather_data(data)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Network error: {e}")
+            return None
+        except ValueError as e:
+            print(f"Invalid JSON response: {e}")
+            return None
+        except KeyError as e:
+            print(f"Missing data in response: {e}")
+            return None
+
+
     def _parse_weather_data(self, data):
         """
         Parses the raw weather data from the API response into a simplified dictionary.
