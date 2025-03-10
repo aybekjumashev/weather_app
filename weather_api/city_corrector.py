@@ -38,7 +38,7 @@ class CityCorrector:
 
         except Exception as e:
             print(f"An unexpected error occurred during geocoding: {e}")
-            return None
+            return None, None, None
 
 
 
