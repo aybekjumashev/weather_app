@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from .serializers import RegistrationationSerializer, LoginSerializer, UserUpdateSerializer, WeatherSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.exceptions import NotFound
-from .models import TgUser
+from .models import User
 from rest_framework.response import Response
 from .utils import get_weather_data
 
@@ -19,26 +19,26 @@ class UserUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        try:
-            user = self.request.user
-            return user
-        except TgUser.DoesNotExist:
-            raise NotFound("User tabılmadı.")
+        return self.request.user  # To'g'ridan-to'g'ri murojaat qilish
 
 class WeatherAPIView(generics.GenericAPIView):
     serializer_class = WeatherSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, city):
-        user = request.user
-        if user.city and user.city == city:
-            weather_data = get_weather_data(city, skip_correction=True)
-        else:
-            weather_data = get_weather_data(city)
+        weather_data = get_weather_data(
+            city,
+            request.user.latitude,
+            request.user.longitude,
+            skip_correction=(request.user.city == city), # Qisqartirilgan shart
+        )
 
         if weather_data:
             serializer = self.get_serializer(data=weather_data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
         else:
-            return Response({"detail": "Hawa rayı maǵlıwmatları tabılmadı."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Hawa rayı maǵlıwmatları tabılmadı."},
+                status=status.HTTP_404_NOT_FOUND,
+            )

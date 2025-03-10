@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
-class TgUser(AbstractUser):
+class User(AbstractUser):
     city = models.CharField(max_length=255, blank=True, null=True, verbose_name="City")
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True, verbose_name="Email")
     first_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Firstname")
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Lastname")

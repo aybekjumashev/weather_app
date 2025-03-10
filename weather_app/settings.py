@@ -14,7 +14,7 @@ load_dotenv()
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
-AUTH_USER_MODEL = 'weather_api.TgUser'
+AUTH_USER_MODEL = 'weather_api.User'
 
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-+ck3zuu8yff)9g-^rh$$v+e&by68lq)fa10j)pqnfzyl0dktd^')  # Default qiymat ishlab chiqish uchun

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import TgUser
+from .models import User
 from .city_corrector import CityCorrector
 
 class RegistrationationSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class RegistrationationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
 
     class Meta:
-        model = TgUser 
+        model = User 
         fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
 
     def validate(self, data):
@@ -18,7 +18,7 @@ class RegistrationationSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        user = TgUser.objects.create( 
+        user = User.objects.create( 
             username=validated_data['username'],
             email=validated_data.get('email', None),
             first_name=validated_data.get('first_name', None),
@@ -46,6 +46,8 @@ class LoginSerializer(TokenObtainPairSerializer):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'city': user.city,
+            'latitude': user.latitude,
+            'longitude': user.longitude,
         }
 
     def validate(self, attrs):
@@ -57,8 +59,8 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TgUser
-        fields = ('first_name', 'last_name', 'email', 'city')
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'city', 'latitude', 'longitude')
     
     def validate(self, data):
         city = data.get('city')
@@ -67,6 +69,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             corrected_city, lat, lon = corrector.correct_city_name(city)
             if corrected_city:
                 data['city'] = corrected_city
+                data['latitude'] = lat
+                data['longitude'] = lon
             else:
                 raise serializers.ValidationError({"city": "Qala atı durıs kiritilmegen."})
         return data
